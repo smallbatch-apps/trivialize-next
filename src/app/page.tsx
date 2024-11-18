@@ -1,20 +1,10 @@
+// import { useRouter } from "next/navigation";
+// import { apiClient } from "@/apiClient";
 import BlueBox from "@/components/layout/BlueBox";
-import SignupForm from "@/components/forms/SignupForm";
 import PlanningHero from "@/images/heroes/planning.jpg";
+import SignupForm from "@/components/forms/SignupForm";
 
 export default function page() {
-  // const validate = Yup.object({
-  //   email: Yup.string().email("Email is invalid").required("Email is required"),
-  //   password: Yup.string()
-  //     .min(6, "Password must be at least 6 characters")
-  //     .required("Password is required"),
-  //   confirmPassword: Yup.string()
-  //     .oneOf([Yup.ref("password"), null], "Password must match")
-  //     .required("Confirm password is required"),
-  //   name: Yup.string().required("Name is required"),
-  //   tandc: Yup.bool().oneOf([true], "Terms and Conditions must be checked"),
-  // });
-
   return (
     <>
       <BlueBox hero={PlanningHero}>

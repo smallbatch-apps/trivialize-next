@@ -1,38 +1,63 @@
-import authConfig from "@/auth.config";
 import NextAuth from "next-auth";
-import { NextResponse } from "next/server";
-// import type { NextRequest } from "next/server";
+import { NextRequest } from "next/server";
+import { apiClient } from "@/apiClient";
 
+import authConfig from "@/auth.config";
 import {
-  DEFAULT_LOGIN_REDIRECT,
-  // apiAuthPrefix,
-  publicRoutes,
   authRoutes,
+  publicRoutes,
+  apiAuthPrefix,
+  DEFAULT_LOGIN_REDIRECT,
 } from "@/routes";
 
 const { auth } = NextAuth(authConfig);
 
-export default auth((req) => {
-  const { nextUrl } = req;
-  const { pathname } = nextUrl;
-  const isLoggedIn = !!req.auth;
-
-  // const isApiAuthRoute = pathname.startsWith(apiAuthPrefix);
-  const isPublicRoute = publicRoutes.includes(pathname);
-  const isAuthRoute = authRoutes.includes(pathname);
-
-  if (isAuthRoute) {
-    if (isLoggedIn) {
-      return NextResponse.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
-    }
-  }
-
-  if (!isLoggedIn && !isPublicRoute) {
-    return NextResponse.redirect(new URL("/login", nextUrl));
-  }
+export default auth((req: NextRequest) => {
+  // if (!req.auth && req.nextUrl.pathname !== "/login") {
+  //   const newUrl = new URL("/login", req.nextUrl.origin);
+  //   return Response.redirect(newUrl);
+  // }
 });
 
-// See "Matching Paths" below to learn more
+// export default auth((req) => {
+//   const { nextUrl } = req;
+//   const isLoggedIn = !!req.auth;
+//   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
+//   const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
+//   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
+
+//   if (isApiAuthRoute) {
+//     return null;
+//   }
+//   if (isAuthRoute) {
+//     if (isLoggedIn) {
+//       return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
+//     }
+//     return null;
+//   }
+
+//   if (!isLoggedIn && !isPublicRoute) {
+//     return Response.redirect(new URL("/login", nextUrl));
+//   }
+
+//   return null;
+// });
+
+export const handleAuthLogin = async (req: NextRequest) => {
+  const provider = req.nextUrl.pathname.split("/").pop();
+  const code = req.nextUrl.searchParams.get("code");
+  const response = await apiClient.post("/auth/login", { provider, code });
+
+  if (response.status !== 200) {
+    return req;
+  }
+  const token = response.headers["authorization"]
+    .replaceInsensitive("bearer", "")
+    .trim();
+
+  return req;
+};
+
 export const config = {
-  matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.icon).*)"],
 };

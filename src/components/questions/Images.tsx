@@ -2,50 +2,67 @@ import Dropzone from "react-dropzone";
 
 import Icon from "@/components/layout/Icon";
 import { Question } from "@/utilities/types";
-import { queryClient } from "@/utilities/queries";
-
-// import { documentService } from "@/services";
+import { queryClient } from "../../app/providers";
 
 interface Props {
-  question: Question | null;
+  question: Question;
 }
 
 export default function Images({ question }: Props) {
+  if (question && !question?.documents) question.documents = [];
+
   return (
     <>
-      <h3 className="text-xl font-oswald ">Images</h3>
-      <div className="grid grid-cols-4 gap-5 my-5 justify-center place-content-center">
-        {question?.documents.map((document) => (
-          <div className="group relative flex items-center" key={document.id}>
-            <img
-              src={`${process.env.REACT_APP_IMAGE_HOST}/${question.companyId}/${document.location}`}
-              className="border rounded"
-              alt={document.title}
-            />
-            <span
-              className="shadow absolute hidden top-2 right-2 w-6 h-6 rounded-sm bg-red-50 text-red-800 text-center group-hover:inline hover:bg-red-200 cursor-pointer"
-              onClick={async () => {
-                // await documentService.delete(document.id);
-                queryClient.invalidateQueries({ queryKey: ["questions"] });
-              }}
+      <div className="flex gap-5 justify-between place-content-center w-full">
+        <div className="flex gap-5 justify-between place-content-center w-full">
+          {question?.documents.map((document) => (
+            <div
+              className="group relative flex items-center w-full"
+              key={document.id}
             >
-              <Icon type="far" icon="times" className="" />
-            </span>
-          </div>
-        ))}
-
+              <img
+                src={`${process.env.NEXT_PUBLIC_IMAGE_URL}${question.company_id}/${document.location}`}
+                className="border rounded h-32 w-auto"
+              />
+              <span
+                className="shadow absolute hidden top-2 right-2 w-6 h-6 rounded-sm bg-red-50 text-red-800 text-center group-hover:inline hover:bg-red-200 cursor-pointer"
+                onClick={async () => {
+                  // await documentService.delete(document.id);
+                  // queryClient.invalidateQueries({ queryKey: ["questions", ques] });
+                }}
+              >
+                <Icon type="far" icon="times" className="" />
+              </span>
+            </div>
+          ))}
+        </div>
         <Dropzone
-          onDrop={async ([file]) => {
-            // await documentService.upload({
-            //   title: file.name,
-            //   type: "company",
-            //   questionId: question?.id,
-            //   document: file,
-            // });
-            queryClient.invalidateQueries({ queryKey: ["questions"] });
+          onDrop={async (acceptedFiles) => {
+            const formData = new FormData();
+            formData.append("question_id", question.id);
+            formData.append("company_id", question.company_id);
+            acceptedFiles.forEach((file) => {
+              formData.append("file", file);
+            });
 
-            // const data = await request.json();
-            // setUploadedFile(data);
+            try {
+              const response = await fetch("/api/upload", {
+                method: "POST",
+                body: formData,
+              });
+
+              if (!response.ok) {
+                throw new Error("Failed to upload file");
+              }
+
+              await response.json();
+
+              queryClient.invalidateQueries({
+                queryKey: ["questions", question.id],
+              });
+            } catch (error) {
+              console.error("Error uploading file:", error);
+            }
           }}
         >
           {({ getRootProps, getInputProps }) => (

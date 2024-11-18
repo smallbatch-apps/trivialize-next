@@ -1,11 +1,9 @@
 import { Fragment, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-// import { Formik, Form, Field } from "formik";
+import { clientPost } from "@/utilities/queries";
 import { useForm } from "react-hook-form";
-
-import { queryClient } from "@/utilities/queries";
+import { queryClient } from "../../app/providers";
 import { Question } from "@/utilities/types";
-// import { answerService } from "@/services";
 
 interface Props {
   question: Question;
@@ -21,21 +19,19 @@ export default function NewAnswerForm({ question }: Props) {
   const { handleSubmit, register, reset } = useForm<FormFields>({
     defaultValues: {
       text: "",
-      points: 0,
+      points: 1,
     },
   });
 
-  const submitFn = (payload: FormFields) => {};
-  // answerService
-  //   .create({ ...payload, questionId: question.id })
-  //   .then(() => {
-  //     queryClient.invalidateQueries({ queryKey: ["questions"] });
-  //     reset();
-  //     setOpen(false);
-  //   })
-  //   .catch((error) => {
-  //     console.log(error);
-  //   });
+  const submitFn = async (payload: FormFields) => {
+    await clientPost("answers", {
+      question_id: question.id,
+      ...payload,
+    });
+
+    queryClient.invalidateQueries({ queryKey: ["questions", question.id] });
+    setOpen(false);
+  };
 
   return (
     <>
@@ -108,7 +104,7 @@ export default function NewAnswerForm({ question }: Props) {
                       Points
                     </label>
                     <input
-                      {...register("points")}
+                      {...register("points", { valueAsNumber: true })}
                       className="p-3 border rounded-sm w-1/5 text-sm"
                     />
                   </div>

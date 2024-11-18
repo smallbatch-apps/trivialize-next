@@ -1,7 +1,6 @@
-// import { Formik, Form, Field, ErrorMessage } from "formik";
 import BlueBox from "@/components/layout/BlueBox";
 import PlanningHero from "@/images/heroes/planning.jpg";
-import SignupForm from "@/components/forms/SignupForm";
+import OauthSignup from "@/components/forms/OauthSignup";
 
 export default function page() {
   return (
@@ -10,9 +9,9 @@ export default function page() {
         <h2 className="text-6xl mb-8 font-oswald">Sign Up</h2>
 
         <p>
-          Create your Trivialize account and start storing questions. You don't
-          need to set up any payments now, but you can upgrade when you're ready
-          to start making events.
+          Create your Trivialize account and start storing questions. You
+          don&apos;t need to set up any payments now, but you can upgrade when
+          you&apos;re ready to start making events.
         </p>
 
         <div className="mt-8">
@@ -28,7 +27,7 @@ export default function page() {
       <div className="px-5 py-3 sm:px-8 sm:py-5 md:px-16 md:py-10 lg:px-20 lg:py-16 xl:px-60 xl:py-20 2xl:px-72 2xl:py-32 font-light">
         <div className="grid grid-cols-2 gap-4">
           <div className="p-3 col-span-2 md:col-span-1">
-            <SignupForm />
+            <OauthSignup />
           </div>
           <div className="shadow rounded p-5 col-span-2 md:col-span-1">
             <h2 className="text-xl text-gray-600 uppercase">Your Account</h2>

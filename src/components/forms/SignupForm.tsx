@@ -4,7 +4,6 @@ import * as z from "zod";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import signupAction from "@/actions/createUser";
 
 import { signupSchema } from "@/validation";
 import FormGroup from "./FormGroup";
@@ -23,10 +22,10 @@ export default function SignupForm() {
   });
 
   const submitFn = (values: z.infer<typeof signupSchema>) => {
-    signupAction(values).then(() => {
-      form.reset();
-      router.push("/questions");
-    });
+    // signupAction(values).then(() => {
+    //   form.reset();
+    //   router.push("/questions");
+    // });
   };
 
   return (

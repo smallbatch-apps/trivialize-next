@@ -1,6 +1,6 @@
 "use client";
 
-import { signOut } from "@/auth";
+// import { signOut } from "@/auth";
 
 import { usePathname } from "next/navigation";
 // import { LoginContext } from "../../utilities/reducers";

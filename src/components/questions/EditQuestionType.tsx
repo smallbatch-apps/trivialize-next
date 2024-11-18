@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Question } from "@/utilities/types";
 import { QuestionTypes, QuestionTypeLabels } from "@/utilities/enums";
-// import { questionService } from "@/services/QuestionService";
-import { queryClient } from "@/utilities/queries";
+import { clientPatch } from "@/utilities/queries";
+import { useForm } from "react-hook-form";
+import { queryClient } from "../../app//providers";
 
 interface Props {
   question: Question;
@@ -11,13 +12,23 @@ interface Props {
 export default function EditQuestionType({ question }: Props) {
   const [editing, setEditing] = useState(false);
   const [qid, setQid] = useState(question.id);
-  const [qtype, setQtype] = useState(question.type);
+
+  const { handleSubmit, register, reset } = useForm<Partial<Question>>({
+    defaultValues: {
+      type: question.type,
+    },
+  });
 
   if (qid !== question.id) {
     setEditing(false);
-    setQtype(question.type);
     setQid(question.id);
   }
+
+  const submitFn = async (payload: Partial<Question>) => {
+    await clientPatch(`questions/${question.id}`, payload);
+    queryClient.invalidateQueries({ queryKey: ["questions", question.id] });
+    setEditing(false);
+  };
 
   return (
     <div className="flex items-center w-full my-3">
@@ -33,11 +44,10 @@ export default function EditQuestionType({ question }: Props) {
         </div>
       )}
       {editing && (
-        <>
+        <form onSubmit={handleSubmit(submitFn)} className="flex w-full">
           <select
-            name="type"
             className="p-2 border rounded-sm flex-grow text-sm"
-            defaultValue={question.type}
+            {...register("type", { valueAsNumber: true })}
           >
             <option value={QuestionTypes.Simple}>
               Simple Question with one Answer
@@ -48,8 +58,9 @@ export default function EditQuestionType({ question }: Props) {
             <option value={QuestionTypes.MultipleCorrect}>
               Multiple Correct Answers
             </option>
+            <option value={QuestionTypes.TrueFalse}>True or False</option>
           </select>
-          <div className="rounded-b text-right w-40 flex">
+          <div className="rounded-b text-right w-40 flex flex-shrink">
             <button
               className="tracking-wider bg-red-600 text-white rounded px-2 py-1 bg-gray-100 hover:bg-red-700 mx-3 w-28"
               onClick={() => {
@@ -74,7 +85,7 @@ export default function EditQuestionType({ question }: Props) {
               className="h-8 w-8 text-gray-700 hover:text-gray-800"
               onClick={() => {
                 setEditing(false);
-                setQtype(question.type);
+                reset();
               }}
             >
               <i
@@ -83,7 +94,7 @@ export default function EditQuestionType({ question }: Props) {
               ></i>
             </button>
           </div>
-        </>
+        </form>
       )}
     </div>
   );

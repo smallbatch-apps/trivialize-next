@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { questionsQuery, tagsQuery } from "@/utilities/queries";
@@ -7,8 +9,8 @@ import QuestionList from "./QuestionList";
 import QuestionDetail from "./QuestionDetail";
 
 export default function QuestionsPanel() {
-  const [activeQuestion, setActiveQuestion] = useState<string | null>(null);
-  const { data: questions } = useQuery({
+  const [activeQuestion, setActiveQuestion] = useState<string>("");
+  const { data: questions = [] } = useQuery({
     queryKey: ["questions"],
     queryFn: questionsQuery,
   });
@@ -19,8 +21,8 @@ export default function QuestionsPanel() {
   const question = questions.find(({ id }) => id === activeQuestion) ?? null;
 
   return (
-    <div className="flex">
-      <div className="flex-1">
+    <>
+      <div className="flex-1 w-3/5 overflow-auto">
         <QuestionList
           tags={tags}
           questions={questions}
@@ -29,9 +31,9 @@ export default function QuestionsPanel() {
         />
         <NewQuestionForm tags={tags} />
       </div>
-      <div className="flex-1">
-        <QuestionDetail question={question} tags={tags} />
+      <div className="flex w-2/5">
+        <QuestionDetail activeQuestion={activeQuestion} tags={tags} />
       </div>
-    </div>
+    </>
   );
 }

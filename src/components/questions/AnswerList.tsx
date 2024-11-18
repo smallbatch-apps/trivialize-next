@@ -1,30 +1,33 @@
 import { useState } from "react";
-import { DragDropContext, Droppable } from "react-beautiful-dnd";
 
 import NewAnswerForm from "./NewAnswerForm";
+import AnswerRow from "./AnswerRow";
+import AnswerDragList from "./AnswerDragList";
 
 import { Question } from "@/utilities/types";
-import { queryClient } from "@/utilities/queries";
-// import { answerService } from "@/services";
-
-import AnswerDragList from "./AnswerDragList";
 
 interface Props {
   question: Question;
 }
 
-const reorder = (list: string[], startIndex: number, endIndex: number) => {
-  const [removed] = list.splice(startIndex, 1);
-  list.splice(endIndex, 0, removed);
-  return list;
-};
-
 export default function AnswerList({ question }: Props) {
-  const [sortOrder, setSortOrder] = useState(
-    question.answers.map(({ id }) => id)
-  );
+  if (!question.answers) question.answers = [];
+  const [sortable, setSortable] = useState(false);
+
+  const [currentAnswerId, setCurrentAnswerId] = useState<string | null>(null);
+
+  if (sortable) {
+    return (
+      <AnswerDragList
+        answers={question.answers}
+        questionId={question.id}
+        setSortable={setSortable}
+      />
+    );
+  }
+
   return (
-    <table className="my-3 mx-3">
+    <table className=" w-full">
       <thead>
         <tr className="bg-gray-200">
           <th className="w-14"></th>
@@ -33,37 +36,38 @@ export default function AnswerList({ question }: Props) {
           <th className="p-2 w-14"></th>
         </tr>
       </thead>
-
-      {question.answers?.length === 0 && (
-        <tbody>
+      <tbody>
+        {question.answers?.length === 0 && (
           <tr className="border border-b-1">
             <td className="p-3" colSpan={3}>
               No answers currently
             </td>
           </tr>
-        </tbody>
-      )}
-      <DragDropContext
-        onDragEnd={async (result) => {
-          const newSortOrder = reorder(
-            sortOrder,
-            result?.source!.index,
-            result?.destination!.index
-          );
-          setSortOrder(newSortOrder);
-          // await answerService.reorderAnswers(question.id, newSortOrder);
-          queryClient.invalidateQueries("questions");
-        }}
-      >
-        <Droppable droppableId="list">
-          {(provided) => (
-            <tbody ref={provided.innerRef} {...provided.droppableProps}>
-              <AnswerDragList answers={question.answers} />
-              {provided.placeholder}
-            </tbody>
-          )}
-        </Droppable>
-      </DragDropContext>
+        )}
+        {question.answers?.map((answer, index) => (
+          <AnswerRow
+            key={answer.id}
+            answer={answer}
+            index={index}
+            questionId={question.id}
+            currentAnswerId={currentAnswerId}
+            setCurrentAnswerId={setCurrentAnswerId}
+          />
+        ))}
+        {question.answers?.length > 1 && (
+          <tr>
+            <td className="p-2" colSpan={4}>
+              <button
+                className="p-2 bg-gray-200 rounded-sm"
+                onClick={() => setSortable(true)}
+              >
+                Sort Answers
+              </button>
+            </td>
+          </tr>
+        )}
+      </tbody>
+
       <tfoot>
         <tr>
           <td className="p-2" colSpan={4}>

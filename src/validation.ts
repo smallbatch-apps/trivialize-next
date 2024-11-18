@@ -5,7 +5,7 @@ export const signupSchema = z
   .object({
     name: z.string().min(3).max(255),
     email: z.string().email(),
-    password: z.string().min(8).max(255),
+    password: z.string().min(7).max(255),
     confirmPassword: z.string().min(8).max(255),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -15,7 +15,7 @@ export const signupSchema = z
 
 export const loginSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(8).max(255),
+  password: z.string().min(7).max(255),
 });
 
 export const forgotPasswordSchema = z.object({
@@ -34,7 +34,7 @@ export const newQuestionSchema = z.object({
 });
 
 export const newAnswerSchema = z.object({
-  questionId: z.string().uuid(),
+  question_id: z.string().uuid(),
   text: z.string().min(3).max(255),
   points: z.number().min(0).max(100),
 });
@@ -45,7 +45,7 @@ export const newSeriesSchema = z.object({
 });
 
 export const newEventSchema = z.object({
-  seriesId: z.string().uuid(),
+  series_id: z.string().uuid(),
   text: z.string().min(3).max(255),
   points: z.number().min(0).max(100),
 });

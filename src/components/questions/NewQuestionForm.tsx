@@ -1,11 +1,12 @@
 import { Fragment, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import Select from "react-select";
+import Select, { MultiValue } from "react-select";
 
 import { useForm } from "react-hook-form";
 import { QuestionTypes } from "@/utilities/enums";
-import { queryClient } from "@/utilities/queries";
+import { queryClient } from "../../app//providers";
 import { Tag } from "@/utilities/types";
+import { clientPost } from "@/utilities/queries";
 // import { questionService } from "@/services";
 
 interface Props {
@@ -15,12 +16,12 @@ interface Props {
 interface FormFields {
   text: string;
   type: QuestionTypes;
-  tags: Tag[];
+  tags: MultiValue<Tag>;
 }
 
 export default function NewQuestionForm({ tags }: Props) {
-  const [open, setOpen] = useState(false);
-  const { register, reset, handleSubmit } = useForm<FormFields>({
+  const [open, setOpen] = useState<boolean>(false);
+  const { register, handleSubmit, setValue } = useForm<FormFields>({
     defaultValues: {
       text: "",
       type: QuestionTypes.Simple,
@@ -28,18 +29,22 @@ export default function NewQuestionForm({ tags }: Props) {
     },
   });
 
-  const submitFn = (payload: FormFields) => {
-    const tags = payload.tags.map(({ id }) => id);
-    // questionService
-    //   .create({ ...payload, tags })
-    //   .then(() => {
-    //     queryClient.invalidateQueries({ queryKey: ["questions"] });
-    //     reset();
-    //     setOpen(false);
-    //   })
-    //   .catch((error) => {
-    //     console.log(error);
-    //   });
+  register("tags");
+
+  const submitFn = async (payload: FormFields) => {
+    const { tags: setTags, ...remaining } = payload;
+    const newQuestion = await clientPost("questions", remaining);
+    const { question } = await newQuestion.json();
+
+    const questionId = question.id;
+
+    await clientPost("question_tags", {
+      question_id: questionId,
+      tag_ids: setTags.map((t) => t.id),
+    });
+
+    queryClient.invalidateQueries({ queryKey: ["questions"] });
+    setOpen(false);
   };
   return (
     <>
@@ -91,8 +96,14 @@ export default function NewQuestionForm({ tags }: Props) {
                   </button>
                 </div>
 
-                <form onSubmit={handleSubmit(submitFn)}>
-                  <div className="mb-3">
+                <form
+                  onSubmit={handleSubmit(submitFn)}
+                  className="flex flex-col gap-3"
+                >
+                  <div className="text-gray-500 text-center">
+                    Don&apos;t worry, you will add answers later.
+                  </div>
+                  <div>
                     <label
                       htmlFor="text"
                       className="inline-block font-semibold mb-2 font-oswald"
@@ -105,30 +116,30 @@ export default function NewQuestionForm({ tags }: Props) {
                     />
                   </div>
 
-                  <div className="mb-3">
+                  <div>
                     <label
                       htmlFor="type"
                       className="inline-block font-semibold mb-2 font-oswald"
                     >
                       Question Type
                     </label>
-                    {/* <Select
-                            name="type"
-                            className="p-3 border rounded-sm w-full text-sm"
-                          >
-                            <option value={QuestionTypes.Simple}>
-                              Simple Question with one Answer
-                            </option>
-                            <option value={QuestionTypes.MultipleChoice}>
-                              Multiple Choice Question
-                            </option>
-                            <option value={QuestionTypes.MultipleCorrect}>
-                              Multiple Correct Answers
-                            </option>
-                          </Field> */}
-                    <span className="text-gray-500">
-                      Don't worry, you will add answers later.
-                    </span>
+                    <select
+                      className="p-3 border rounded-sm w-full text-sm"
+                      {...register("type", { valueAsNumber: true })}
+                    >
+                      <option value={QuestionTypes.Simple}>
+                        Simple Question with one Answer
+                      </option>
+                      <option value={QuestionTypes.MultipleChoice}>
+                        Multiple Choice Question
+                      </option>
+                      <option value={QuestionTypes.MultipleCorrect}>
+                        Multiple Correct Answers
+                      </option>
+                      <option value={QuestionTypes.TrueFalse}>
+                        True or False
+                      </option>
+                    </select>
                   </div>
                   <div>
                     <label
@@ -137,29 +148,18 @@ export default function NewQuestionForm({ tags }: Props) {
                     >
                       Tags
                     </label>
-                    {/* <Select
-                            options={tags}
-                            isMulti
-                            name="tags"
-                            className="z-50 react-select"
-                            classNamePrefix="react-select"
-                            getOptionLabel={({ text }) => text}
-                            getOptionValue={({ id }) => id}
-                            onChange={(value) =>
-                              props.setFieldValue("tags", value)
-                            }
-                          /> */}
+                    <Select
+                      options={tags}
+                      isMulti
+                      name="tags"
+                      className="z-50 react-select"
+                      classNamePrefix="react-select"
+                      getOptionLabel={({ text }) => text}
+                      getOptionValue={({ id }) => id}
+                      onChange={(value) => setValue("tags", value)}
+                    />
                   </div>
                   <div className="text-right">
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setOpen(false);
-                      }}
-                      className="p-2 px-4 text-sm rounded-sm bg-white text-gray-800 mr-4"
-                    >
-                      <i className="fal fa-times"></i>
-                    </button>
                     <button
                       type="submit"
                       className="p-6 hidden md:inline-block py-3 text-lg font-light tracking-wider bg-red-600 text-white rounded mt-4"

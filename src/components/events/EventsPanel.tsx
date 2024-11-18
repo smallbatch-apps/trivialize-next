@@ -1,13 +1,13 @@
+import { useState } from "react";
+
 import { useQuery } from "@tanstack/react-query";
-import { eventsQuery, seriesQuery } from "@/utilities/queries";
+import { seriesQuery } from "@/utilities/queries";
 
 import SeriesList from "./SeriesList";
 
 export default function EventsPanel() {
-  const { data: events = [] } = useQuery({
-    queryKey: ["events"],
-    queryFn: eventsQuery,
-  });
+  const [eventId, setEventId] = useState<string>("");
+
   const { data: series = [] } = useQuery({
     queryKey: ["series"],
     queryFn: seriesQuery,
@@ -19,7 +19,7 @@ export default function EventsPanel() {
         Manage Events
       </h1>
 
-      <SeriesList series={series} events={events} />
+      <SeriesList />
     </>
   );
 }

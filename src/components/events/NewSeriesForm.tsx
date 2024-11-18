@@ -3,8 +3,9 @@
 import { Fragment, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Dialog, Transition } from "@headlessui/react";
-import { queryClient } from "@/utilities/queries";
-
+import { queryClient } from "../../app/providers";
+import { clientPost } from "@/utilities/queries";
+import Icon from "@/components/layout/Icon";
 interface FormFields {
   name: string;
   description: string;
@@ -21,16 +22,10 @@ export default function NewSeriesForm() {
   });
 
   const submitFn = async (payload: FormFields) => {
-    // seriesService
-    //   .create(payload)
-    //   .then(() => {
-    //     queryClient.invalidateQueries({ queryKey: ["series"] });
-    //     reset();
-    //     setOpen(false);
-    //   })
-    //   .catch((error) => {
-    //     console.log(error);
-    //   });
+    await clientPost("series", payload);
+    queryClient.invalidateQueries({ queryKey: ["series"] });
+    reset();
+    setOpen(false);
   };
   return (
     <>
@@ -107,7 +102,7 @@ export default function NewSeriesForm() {
                       className="p-3 border rounded-sm w-full text-sm"
                     />
                     <span className="text-gray-500">
-                      Don't worry, you will add events later.
+                      Don&apos;t worry, you will add events later.
                     </span>
                   </div>
 
@@ -125,7 +120,7 @@ export default function NewSeriesForm() {
                       type="submit"
                       className="p-6 hidden md:inline-block py-3 text-lg font-light tracking-wider bg-red-600 text-white rounded mt-4"
                     >
-                      Save Question
+                      Create Series
                     </button>
                   </div>
                 </form>
@@ -139,7 +134,7 @@ export default function NewSeriesForm() {
           className="p-3 hidden md:inline-block px-6 text-lg font-light tracking-wider bg-red-600 text-white rounded mt-4"
           onClick={() => setOpen(true)}
         >
-          Create New Series
+          <Icon type="fas" icon="plus" /> Create New Series
         </button>
       </div>
     </>

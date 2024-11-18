@@ -26,6 +26,7 @@ export default function QuestionList({
 }: Props) {
   let availableTags: string[] = questions
     .reduce((allTags, question) => {
+      if (!question.tags) question.tags = [];
       allTags = [...allTags, ...question.tags];
       return allTags;
     }, [] as Tag[])
@@ -44,6 +45,7 @@ export default function QuestionList({
   });
 
   const stringFilter = (question: Question) => {
+    // return true;
     if (filters.searchString.length < 3) return true;
     return question.text.includes(filters.searchString);
   };
@@ -56,6 +58,7 @@ export default function QuestionList({
   };
 
   const typesFilter = (question: Question) => {
+    return true;
     if (filters.types.length === 0) return true;
     const types = filters.types.map((type: QuestionType) => type.value);
     return types.includes(question.type);
@@ -91,19 +94,14 @@ export default function QuestionList({
                   "hover:bg-gray-100": activeQuestion !== question.id,
                 }
               )}
-              onClick={() => {
-                setActiveQuestion(question.id);
-              }}
+              onClick={() => setActiveQuestion(question.id)}
             >
               <div className="flex-grow">
                 <p className="w-full font-semibold">{question.text}</p>
                 <span className="inline-block mr-5">
                   {QuestionTypeLabels[question.type]}
                 </span>
-                <p className="inline-block mr-5">
-                  {question.answers?.length} Answer
-                  {question.answers?.length === 1 ? "" : "s"}
-                </p>
+
                 <p className="inline-block mr-5">
                   {question.tags.length === 0 && <>No tags</>}
                   {question.tags.map((tag) => (

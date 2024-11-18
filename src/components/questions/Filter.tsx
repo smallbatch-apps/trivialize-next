@@ -46,7 +46,7 @@ export default function Filter({ tags, filters, dispatchFilters }: Props) {
               </label>
               <input
                 type="text"
-                className="mb-3 h-9"
+                className="mb-3 h-9 w-full border border-gray-300 rounded-sm p-2"
                 name="searchString"
                 value={filters.searchString}
                 onChange={(e) =>

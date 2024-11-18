@@ -7,7 +7,7 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import FormGroup from "./FormGroup";
 import Button from "./Button";
-import { login } from "@/actions";
+
 // import { useRouter } from "next/navigation";
 
 export default function LoginForm() {
@@ -20,7 +20,7 @@ export default function LoginForm() {
 
   const submitFn = (payload: z.infer<typeof loginSchema>) => {
     console.log("submitting");
-    login(payload).then(() => form.reset());
+    // login(payload).then(() => form.reset());
   };
 
   return (

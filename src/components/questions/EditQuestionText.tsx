@@ -1,21 +1,38 @@
 import { useState } from "react";
-
-// import { questionService } from "@/services/QuestionService";
-import { queryClient } from "@/utilities/queries";
+import { clientPatch } from "@/utilities/queries";
+import { useForm } from "react-hook-form";
+import { queryClient } from "../../app//providers";
 import { Question } from "@/utilities/types";
 
 interface Props {
   question: Question;
 }
 
+// interface EditQuestionFormFields {
+//   points: number;
+//   type: QuestionTypes;
+//   text: string;
+//   id: string;
+// }
+
 export default function EditQuestionText({ question }: Props) {
   const [editing, setEditing] = useState<boolean>(false);
   const [qid, setQid] = useState<string>(question.id);
-  const [qtext, setQtext] = useState<string>(question.text);
+
+  const { handleSubmit, register, reset } = useForm<Partial<Question>>({
+    defaultValues: {
+      text: question.text,
+    },
+  });
+
+  const submitFn = async (payload: Partial<Question>) => {
+    await clientPatch(`questions/${question.id}`, payload);
+    queryClient.invalidateQueries({ queryKey: ["questions", question.id] });
+    setEditing(false);
+  };
 
   if (qid !== question.id) {
     setEditing(false);
-    setQtext(question.text);
     setQid(question.id);
   }
 
@@ -30,48 +47,31 @@ export default function EditQuestionText({ question }: Props) {
         </div>
       )}
       {editing && (
-        <>
+        <form onSubmit={handleSubmit(submitFn)} className="p-3">
           <textarea
-            onChange={(e) => setQtext(e.target.value)}
-            value={qtext}
+            {...register("text")}
             className="p-2 bg-white rounded-sm border border-gray-300 w-full"
           ></textarea>
-          <div className="rounded-b text-right flex justify-end">
+          <div className="rounded-b text-right flex justify-end items-center gap-2">
             <button
-              className="tracking-wider bg-red-600 text-white rounded px-2 py-1 bg-gray-100 hover:bg-red-700 w-28"
-              onClick={() => {
-                // questionService
-                //   .edit(question.id, { text: qtext })
-                //   .then(() => {
-                //     queryClient.invalidateQueries({ queryKey: ["questions"] });
-                //     setEditing(false);
-                //   })
-                //   .catch((error) => {
-                //     console.log(error);
-                //   });
-              }}
+              type="submit"
+              className="tracking-wider bg-red-600 text-white rounded-sm px-3 py-1 bg-gray-100 hover:bg-red-700 flex items-center gap-2"
             >
-              <i
-                className="fal fa-check text-xl relative mr-2"
-                style={{ top: "3px" }}
-              ></i>
+              <i className="fal fa-check text-xl"></i>
               Save
             </button>
 
             <button
-              className="h-8 w-8 ml-2 text-gray-700 hover:text-gray-900"
+              className="text-gray-700 hover:text-gray-900"
               onClick={() => {
+                reset();
                 setEditing(false);
-                setQtext(question.text);
               }}
             >
-              <i
-                className="fal fa-times text-xl relative"
-                style={{ top: "3px" }}
-              ></i>
+              <i className="fal fa-times text-xl relative"></i>
             </button>
           </div>
-        </>
+        </form>
       )}
     </div>
   );
